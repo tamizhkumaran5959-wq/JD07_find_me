@@ -1,0 +1,326 @@
+:root {
+  /* =========================================================================
+     CENTRALIZED SOFT PINK & PASTEL PALETTE (21st Birthday Theme)
+     ========================================================================= */
+  --color-primary: #EFC3CA;               /* Soft Pink (dominant accent) */
+  --color-primary-hover: #E8B4BD;         /* Slightly deeper pink for hover */
+  --color-primary-active: #DF9DA8;        /* Pressed pink state */
+  --color-secondary: #F7D6DC;             /* Sampled Light Blush Pink */
+  --color-secondary-peach: #FAA943;       /* Warm peach / golden accent */
+  --color-background: #FFF9F8;            /* Warm White */
+  --color-blush: #FCE8EB;                 /* Pale blush background */
+  --color-border: #DDA7B0;                /* Muted rose for borders */
+  --color-border-subtle: rgba(221, 167, 176, 0.35); /* Subtle rose border */
+  --color-border-glow: rgba(239, 195, 202, 0.45);   /* Glowing rose border */
+  --color-text: #754653;                  /* Deep rose for readable text on pale backgrounds */
+  --color-text-emphasis: #5a2c38;         /* High-contrast deep rose */
+  --color-text-muted: #9c6c77;            /* Medium muted rose for secondary text */
+  --color-text-light: #FFF9F8;            /* Warm white for text on dark/rose backgrounds */
+  --color-shadow: rgba(90, 45, 55, 0.12); /* Soft neutral shadow */
+  --color-shadow-medium: rgba(90, 45, 55, 0.22);
+  --color-shadow-deep: rgba(90, 45, 55, 0.45);
+
+  /* Deep Atmospheric Wine/Plum Canvas Underlay */
+  --bg-deep: #0a0308;
+  --bg-card: rgba(30, 10, 26, 0.72);
+  --bg-card-hover: rgba(44, 15, 38, 0.88);
+  --bg-card-blush: rgba(252, 232, 235, 0.94);
+
+  /* Fairy Lights (Warm yellow & golden white as requested) */
+  --fairy-light-core: #ffffff;
+  --fairy-light-warm: #fff2a3;
+  --fairy-light-glow: rgba(255, 215, 90, 0.75);
+  --fairy-light-amber: rgba(255, 170, 50, 0.35);
+
+  /* Legacy Variable Aliases mapped directly to New Pastel Theme */
+  --gold-primary: var(--color-primary);
+  --gold-warm: var(--color-primary);
+  --gold-rich: var(--color-border);
+  --gold-accent: var(--color-secondary);
+  --rose-soft: var(--color-secondary);
+  --rose-glow: var(--color-primary);
+  --lavender: var(--color-secondary);
+  --border-glow: var(--color-border-subtle);
+  --border-highlight: var(--color-border-glow);
+  --text-primary: var(--color-text-light);
+  --text-secondary: rgba(255, 245, 248, 0.88);
+  --text-gold: var(--color-primary);
+
+  /* Fonts */
+  --font-serif: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+  --font-display: 'Cinzel', serif;
+  --font-script: 'Alex Brush', cursive;
+  --font-handwritten: 'Caveat', cursive, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  /* Shadows & Glows */
+  --glow-pink: 0 0 35px rgba(239, 195, 202, 0.5);
+  --glow-blush: 0 0 25px rgba(247, 214, 220, 0.45);
+  --glow-rose: 0 0 35px rgba(221, 167, 176, 0.4);
+  --glow-gold: 0 0 35px rgba(239, 195, 202, 0.45);
+  --shadow-cinematic: 0 25px 60px -15px rgba(35, 12, 22, 0.75);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  background-color: var(--bg-deep);
+  color: var(--color-text-light);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Glassmorphism Card Utility */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-cinematic), inset 0 1px 1px rgba(255, 255, 255, 0.14);
+  border-radius: 24px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel:hover {
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-cinematic), 0 0 30px rgba(239, 195, 202, 0.2);
+}
+
+/* Soft Pink Shimmer Text */
+.gold-gradient-text,
+.pink-gradient-text {
+  background: linear-gradient(135deg, #FFF9F8 0%, #FCE8EB 25%, #EFC3CA 65%, #DDA7B0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rose-gradient-text {
+  background: linear-gradient(135deg, #FFF9F8 0%, #F7D6DC 30%, #EFC3CA 70%, #754653 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Primary Button: Soft Pink with Readable Dark-Rose Text */
+.btn-cinematic {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 36px;
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-text);
+  background: linear-gradient(135deg, #FCE8EB 0%, #EFC3CA 50%, #F7D6DC 100%);
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(90, 45, 55, 0.2), 0 0 20px rgba(239, 195, 202, 0.35);
+  transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  text-decoration: none;
+}
+
+.btn-cinematic::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  transition: left 0.7s ease;
+}
+
+.btn-cinematic:hover {
+  transform: translateY(-3px) scale(1.03);
+  background: linear-gradient(135deg, #F7D6DC 0%, #E8B4BD 50%, #EFC3CA 100%);
+  color: var(--color-text-emphasis);
+  box-shadow: 0 16px 36px rgba(90, 45, 55, 0.28), 0 0 30px rgba(239, 195, 202, 0.55);
+  border-color: #c98e98;
+}
+
+.btn-cinematic:hover::before {
+  left: 100%;
+}
+
+.btn-cinematic:active {
+  transform: translateY(0) scale(0.98);
+  background: var(--color-primary-active);
+}
+
+.btn-cinematic:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 3px;
+}
+
+.btn-cinematic:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Secondary Button: Warm White or Pale Blush Background with Rose Borders */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 24px;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-light);
+  background: rgba(252, 232, 235, 0.1);
+  border: 1px solid var(--color-border);
+  border-radius: 9999px;
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-ghost:hover {
+  background: rgba(239, 195, 202, 0.22);
+  color: #ffffff;
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(90, 45, 55, 0.15);
+}
+
+.btn-ghost:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-ghost:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.btn-ghost:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Animations */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale3d(1, 1, 1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale3d(1.04, 1.04, 1);
+  }
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -9px, 0) rotate(0.8deg);
+  }
+}
+
+@keyframes shimmerSweep {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Ambient Background Canvas Layer */
+.ambient-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Active Stage Viewport Wrapper */
+.stage-container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeInStage 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes fadeInStage {
+  from {
+    opacity: 0;
+    transform: scale3d(0.98, 0.98, 1) translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1) translate3d(0, 0, 0);
+  }
+}
+
+/* Subtle Cursor Glow (Desktop only) */
+.cursor-ambient-aura {
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(circle, rgba(239, 195, 202, 0.12) 0%, rgba(221, 167, 176, 0.06) 45%, transparent 70%);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease, opacity 0.5s ease;
+}
+
+/* Media Query Responsiveness */
+@media (max-width: 768px) {
+  .stage-container {
+    padding: 16px;
+  }
+
+  .btn-cinematic {
+    padding: 14px 28px;
+    font-size: 0.98rem;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
