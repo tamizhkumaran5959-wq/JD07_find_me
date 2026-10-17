@@ -3,6 +3,7 @@ import type { BirthdayStage } from './types';
 import { birthdayConfig } from './config/birthdayConfig';
 import { AmbientBackground } from './components/AmbientBackground';
 import { AudioPlayer } from './components/AudioPlayer';
+import { LoadingScreen } from './components/LoadingScreen';
 import { StageInvitation } from './components/StageInvitation';
 import { StageAgeReveal } from './components/StageAgeReveal';
 import { StageGallery } from './components/StageGallery';
@@ -10,14 +11,20 @@ import { StageSurpriseGift } from './components/StageSurpriseGift';
 import { StageMessage } from './components/StageMessage';
 import { StageCelebration } from './components/StageCelebration';
 import { StageFinalReveal } from './components/StageFinalReveal';
+import { TrainVideoBackground } from './components/TrainVideoBackground';
 import { memoryAudioController } from './utils/memoryAudioController';
 import { celebrationAudioController } from './utils/celebrationAudioController';
 
 export const App: React.FC = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currentStage, setCurrentStage] = useState<BirthdayStage>('invitation');
   const [musicStarted, setMusicStarted] = useState<boolean>(false);
   const [hasEnteredMemoryTab, setHasEnteredMemoryTab] = useState<boolean>(false);
   const lastTransitionTime = useRef<number>(0);
+
+  const handleLoadingComplete = () => {
+    setIsLoading(false);
+  };
 
   // Persistent soundtrack lifecycle: First entry into the Memory tab pauses opening song
   useEffect(() => {
@@ -69,8 +76,14 @@ export const App: React.FC = () => {
 
   return (
     <main className="app-viewport">
+      {/* Pre-experience loading screen: preloads both videos, then reveals invitation */}
+      {isLoading && <LoadingScreen onReady={handleLoadingComplete} />}
+
       {/* Dynamic Ambient Background Canvas */}
       <AmbientBackground />
+
+      {/* Persistent Train Journey Background Video Layer */}
+      <TrainVideoBackground isVisible={currentStage === 'gallery'} />
 
       {/* Persistent Application-Level Audio Player */}
       <AudioPlayer
@@ -151,6 +164,8 @@ export const App: React.FC = () => {
         }
 
         .active-stage-view {
+          position: relative;
+          z-index: 10;
           flex: 1;
           display: flex;
           flex-direction: column;

@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Heart, Gift, RotateCcw, Volume2 } from 'lucide-r
 import type { BirthdayConfig } from '../types';
 import { triggerGentleSparks } from '../utils/confetti';
 import { memoryAudioController } from '../utils/memoryAudioController';
+import { trainVideoController } from '../utils/trainVideoController';
 
 interface StageGalleryProps {
   config: BirthdayConfig;
@@ -18,17 +19,9 @@ export const StageGallery: React.FC<StageGalleryProps> = ({ config, onProceed })
   const [isInitialApproach, setIsInitialApproach] = useState(true);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
-  // Video & Audio Lifecycle State
-  const [videoPhase, setVideoPhase] = useState<'opening' | 'looping'>('opening');
-  const [isPhotosRevealed, setIsPhotosRevealed] = useState<boolean>(false);
+  // Video & Audio Lifecycle State (Opening video plays, photos reveal at 12s or skip)
+  const [isPhotosRevealed, setIsPhotosRevealed] = useState<boolean>(() => trainVideoController.getState().isPhotosRevealed);
   const [showEnableSoundPrompt, setShowEnableSoundPrompt] = useState<boolean>(false);
-
-  const openingVideoRef = useRef<HTMLVideoElement | null>(null);
-  const loopingVideoRef = useRef<HTMLVideoElement | null>(null);
-  const hasTriggeredBgmRef = useRef<boolean>(false);
-  const hasRevealedPhotosRef = useRef<boolean>(false);
-  const hasSwitchedToLoopRef = useRef<boolean>(false);
-  const fadeAnimRef = useRef<number | null>(null);
 
   const [viewportSize, setViewportSize] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 1200,
@@ -79,140 +72,32 @@ export const StageGallery: React.FC<StageGalleryProps> = ({ config, onProceed })
    * At 12s: Staggered reveal of memory photos, fairy lights, and HUD.
    * =========================================================================
    */
-  const fadeOpeningVideoAudio = useCallback((video: HTMLVideoElement, durationMs: number) => {
-    const startVol = video.volume;
-    const startTime = performance.now();
-
-    const step = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(1, elapsed / durationMs);
-      video.volume = Math.max(0, startVol * (1 - progress));
-
-      if (progress < 1) {
-        fadeAnimRef.current = requestAnimationFrame(step);
-      } else {
-        video.volume = 0;
-        fadeAnimRef.current = null;
-      }
-    };
-
-    fadeAnimRef.current = requestAnimationFrame(step);
-  }, []);
-
-  // Timeupdate handler tracking exact playback timestamp
-  const handleOpeningTimeUpdate = useCallback(() => {
-    const video = openingVideoRef.current;
-    if (!video) return;
-    const time = video.currentTime;
-
-    // 1. At 12 seconds: Begin playing f_1_m.mp3 and gently fade opening train audio
-    if (time >= 12.0 && !hasTriggeredBgmRef.current) {
-      hasTriggeredBgmRef.current = true;
-      memoryAudioController.startMemoriesAudioSequence();
-      fadeOpeningVideoAudio(video, 2000);
-    }
-
-    // 2. Around 11.5-12s: Begin crossfading to looping video
-    if (time >= 11.5 && !hasSwitchedToLoopRef.current) {
-      hasSwitchedToLoopRef.current = true;
-      setVideoPhase('looping');
-      loopingVideoRef.current?.play().catch(() => {});
-    }
-
-    // 3. At 12 seconds: Reveal memory photos and HUD
-    if (time >= 12.0 && !hasRevealedPhotosRef.current) {
-      hasRevealedPhotosRef.current = true;
-      setIsPhotosRevealed(true);
-    }
-  }, [fadeOpeningVideoAudio]);
-
-  const handleOpeningEnded = useCallback(() => {
-    if (!hasTriggeredBgmRef.current) {
-      hasTriggeredBgmRef.current = true;
-      memoryAudioController.startMemoriesAudioSequence();
-    }
-    if (!hasRevealedPhotosRef.current) {
-      hasRevealedPhotosRef.current = true;
-      setIsPhotosRevealed(true);
-    }
-    if (!hasSwitchedToLoopRef.current) {
-      hasSwitchedToLoopRef.current = true;
-      setVideoPhase('looping');
-      loopingVideoRef.current?.play().catch(() => {});
-    }
-  }, []);
-
-  const handleOpeningError = useCallback(() => {
-    console.warn('Opening video encountered playback issue, activating graceful fallback');
-    if (!hasTriggeredBgmRef.current) {
-      hasTriggeredBgmRef.current = true;
-      memoryAudioController.startMemoryBgm();
-    }
-    hasRevealedPhotosRef.current = true;
-    setIsPhotosRevealed(true);
-    hasSwitchedToLoopRef.current = true;
-    setVideoPhase('looping');
-    loopingVideoRef.current?.play().catch(() => {});
-  }, []);
-
-  // Initialize playback on mount
+  // Initialize playback via persistent centralized controller
   useEffect(() => {
-    const video = openingVideoRef.current;
-    if (!video) return;
+    trainVideoController.startGalleryPlayback(() => {
+      setIsPhotosRevealed(true);
+      memoryAudioController.startMemoriesAudioSequence();
+    });
 
-    video.currentTime = 0;
-    video.volume = 1.0;
-    video.muted = false;
+    const unsubscribe = trainVideoController.subscribe((state) => {
+      setIsPhotosRevealed(state.isPhotosRevealed);
+      setShowEnableSoundPrompt(state.isAutoplayBlocked);
+    });
 
-    const playPromise = video.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((err) => {
-        console.warn('Autoplay with sound restricted by browser; starting muted:', err);
-        video.muted = true;
-        video.play().catch((playErr) => console.error('Video playback failed:', playErr));
-        setShowEnableSoundPrompt(true);
-      });
-    }
-
-    // Preload looping video
-    if (loopingVideoRef.current) {
-      loopingVideoRef.current.load();
-    }
-
-    // Safety fallback timer ensuring user reaches memories within 12.5s even if media freezes
+    // Safety fallback: ensure user reaches memories within 12.5s even if media freezes
     const fallbackTimer = setTimeout(() => {
-      if (!hasTriggeredBgmRef.current) {
-        hasTriggeredBgmRef.current = true;
-        memoryAudioController.startMemoryBgm();
-      }
-      if (!hasRevealedPhotosRef.current) {
-        hasRevealedPhotosRef.current = true;
-        setIsPhotosRevealed(true);
-      }
-      if (!hasSwitchedToLoopRef.current) {
-        hasSwitchedToLoopRef.current = true;
-        setVideoPhase('looping');
-        loopingVideoRef.current?.play().catch(() => {});
-      }
+      trainVideoController.skipToMemories();
     }, 12500);
 
     return () => {
+      unsubscribe();
       clearTimeout(fallbackTimer);
-      if (fadeAnimRef.current !== null) {
-        cancelAnimationFrame(fadeAnimRef.current);
-      }
     };
   }, []);
 
   const handleEnableSound = () => {
-    const video = openingVideoRef.current;
-    if (video) {
-      video.muted = false;
-      video.volume = 1.0;
-    }
-    if (hasTriggeredBgmRef.current) {
-      memoryAudioController.startMemoryBgm({ force: true });
-    }
+    trainVideoController.enableSound();
+    memoryAudioController.startMemoryBgm({ force: true });
     setShowEnableSoundPrompt(false);
   };
 
@@ -508,60 +393,36 @@ export const StageGallery: React.FC<StageGalleryProps> = ({ config, onProceed })
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* =========================================================================
-          1. FULL-SCREEN CINEMATIC TRAIN JOURNEY BACKGROUND VIDEO
-         ========================================================================= */}
-      <div className="train-video-bg-viewport" aria-hidden="true">
-        {/* Opening Train Journey Video (Plays with original audio 0-10s, fades at 10-12s) */}
-        <video
-          ref={openingVideoRef}
-          className={`train-fullscreen-video opening-video-track ${
-            videoPhase === 'looping' ? 'video-fade-out' : 'video-visible'
-          }`}
-          playsInline
-          preload="auto"
-          onTimeUpdate={handleOpeningTimeUpdate}
-          onEnded={handleOpeningEnded}
-          onError={handleOpeningError}
-        >
-          <source src="/videos/Begining.mp4" type="video/mp4" />
-          <source src="/videos/Begining.mkv" type="video/x-matroska" />
-          <source src="/memoreies_bg_videos/Begining.mkv" type="video/x-matroska" />
-        </video>
+      {/* Persistent train video background is managed by TrainVideoBackground at root level */}
 
-        {/* Continuous Looping Train Video (preloaded, loops seamlessly) */}
-        <video
-          ref={loopingVideoRef}
-          className={`train-fullscreen-video looping-video-track ${
-            videoPhase === 'looping' ? 'video-visible' : 'video-hidden'
-          }`}
-          loop
-          muted
-          playsInline
-          preload="auto"
-        >
-          <source src="/videos/Looping.mp4" type="video/mp4" />
-          <source src="/videos/looping.mp4" type="video/mp4" />
-          <source src="/videos/Looping.mkv" type="video/x-matroska" />
-          <source src="/videos/looping.mkv" type="video/x-matroska" />
-          <source src="/memoreies_bg_videos/Looping.mkv" type="video/x-matroska" />
-        </video>
+      {/* Floating Controls during Opening Train Video (0-12s) */}
+      {!isPhotosRevealed && (
+        <div className="train-opening-controls-overlay">
+          {showEnableSoundPrompt && (
+            <button
+              type="button"
+              onClick={handleEnableSound}
+              className="train-enable-sound-pill"
+              aria-label="Enable train journey audio"
+            >
+              <Volume2 size={16} className="sound-pulse-icon" />
+              <span>Enable Sound 🎶</span>
+            </button>
+          )}
 
-        {/* Cinematic Scrim & Gradient Overlay for Contrast */}
-        <div className={`train-video-scrim-layer ${isPhotosRevealed ? 'scrim-photos-active' : 'scrim-opening-subtle'}`} />
-      </div>
-
-      {/* Floating "Enable Sound" Pill if Autoplay was restricted */}
-      {showEnableSoundPrompt && (
-        <button
-          type="button"
-          onClick={handleEnableSound}
-          className="train-enable-sound-pill"
-          aria-label="Enable train journey audio"
-        >
-          <Volume2 size={16} className="sound-pulse-icon" />
-          <span>Enable Sound 🎶</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => {
+              trainVideoController.skipToMemories();
+              memoryAudioController.startMemoriesAudioSequence();
+            }}
+            className="train-skip-intro-btn"
+            aria-label="Skip train intro to view memories"
+          >
+            <span>Skip to Memories</span>
+            <ArrowRight size={15} />
+          </button>
+        </div>
       )}
 
       {/* =========================================================================
@@ -847,7 +708,7 @@ export const StageGallery: React.FC<StageGalleryProps> = ({ config, onProceed })
           height: 100vh;
           min-height: 100vh;
           overflow: hidden;
-          background: #060205;
+          background: transparent;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -905,12 +766,49 @@ export const StageGallery: React.FC<StageGalleryProps> = ({ config, onProceed })
                       linear-gradient(180deg, rgba(8, 2, 7, 0.55) 0%, transparent 40%, rgba(8, 2, 7, 0.75) 100%);
         }
 
+        /* Opening Train Video Overlay Controls */
+        .train-opening-controls-overlay {
+          position: fixed;
+          bottom: 32px;
+          right: 32px;
+          z-index: 100;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .train-skip-intro-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 22px;
+          border-radius: 9999px;
+          background: rgba(28, 10, 26, 0.88);
+          border: 1px solid var(--color-primary);
+          color: var(--color-text-light);
+          font-family: var(--font-sans);
+          font-size: 0.88rem;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 15px rgba(239, 195, 202, 0.35);
+          backdrop-filter: blur(12px);
+          transition: all 0.3s ease;
+          animation: pulseSkipBtn 2.2s infinite ease-in-out;
+        }
+
+        .train-skip-intro-btn:hover {
+          transform: translateY(-2px) scale(1.04);
+          box-shadow: 0 12px 28px rgba(0, 0, 0, 0.7), 0 0 25px rgba(239, 195, 202, 0.55);
+          border-color: var(--color-secondary-peach);
+        }
+
+        @keyframes pulseSkipBtn {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.03); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(250, 169, 67, 0.4); }
+        }
+
         /* Enable Sound Pill */
         .train-enable-sound-pill {
-          position: fixed;
-          top: 24px;
-          right: 24px;
-          z-index: 60;
           display: inline-flex;
           align-items: center;
           gap: 8px;

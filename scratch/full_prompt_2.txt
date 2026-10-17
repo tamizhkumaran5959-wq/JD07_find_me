@@ -1,0 +1,276 @@
+<USER_REQUEST>
+# Ultimate Website Optimization — Video Preloading, Smooth Playback, Fast Loading & Functional Validation
+
+Act as a senior frontend performance engineer specializing in React, browser media playback, production optimization, and Vercel/Netlify deployment.
+
+I want you to thoroughly optimize my existing birthday website to achieve the best practical performance possible. The website must load quickly, feel responsive, play the train videos smoothly, and ensure that every existing feature continues to work correctly.
+
+**This is an optimization task, not a redesign.** Inspect the existing codebase first, then implement the necessary changes directly. Preserve the current design, text, photographs, animations, audio sequences, slide navigation, and interactions.
+
+## 1. Main Requirement: Prepare Both Videos Before Opening the Website
+
+The two essential video files are:
+
+- `Begining.mp4` — train intro video.
+- `Looping.mp4` — looping train/memories video.
+
+Locate these files in the existing project and verify their actual paths, file sizes, formats, and references.
+
+Implement a dedicated initial loading screen that appears before the main birthday website becomes accessible.
+
+### Required startup sequence
+
+1. Display a beautiful loading screen matching the website's existing romantic burgundy, gold, and cinematic theme.
+2. Begin preparing both `Begining.mp4` and `Looping.mp4` as early as possible.
+3. Initialize the video elements and request the necessary media data.
+4. Show separate loading progress or preparation indicators for the two videos.
+5. Keep the main website hidden and prevent its interactions until both videos meet the defined readiness criteria.
+6. When both videos are ready, smoothly reveal the existing birthday website.
+7. Remove the loading screen without resetting the videos or unnecessarily downloading the same media again.
+8. When the user reaches the train intro, playback should begin promptly without an avoidable delay.
+
+The website must not reveal a broken video player or a permanent black screen.
+
+### Important technical distinction
+
+Do not assume that downloading the first few bytes means an entire video has been downloaded.
+
+For large videos, do not blindly wait for `canplaythrough`, because browsers cannot reliably guarantee that a complete video will play without buffering.
+
+Use appropriate media events, such as `loadedmetadata`, `loadeddata`, `canplay`, and `progress`, to determine whether the browser has enough media data to start playback.
+
+Define a practical readiness policy for both videos and document it in the code.
+
+**Preferred approach:** Prepare both videos so they can begin playing reliably, while avoiding the requirement to download every byte of both files before showing the website.
+
+If full preloading is explicitly required and both files are small enough, explain the storage, bandwidth, and loading-time trade-offs before implementing it.
+
+## 2. Implement a Reliable Video Preloading Manager
+
+Create or improve a centralized media preparation utility that manages both video files.
+
+Requirements:
+
+- Use the correct paths and filenames with exact letter casing.
+- Use the native HTML video API for local MP4 files.
+- Set `preload` appropriately, initially using `auto` where beneficial and supported.
+- Initialize the media elements early enough to prepare the videos before the main experience opens.
+- Monitor loading events, readiness, network failures, decoding failures, and media errors.
+- Avoid repeatedly changing `src`, calling `load()`, or remounting video elements unnecessarily.
+- Prevent duplicate preload operations and duplicate video elements.
+- Ensure both video elements are reused during playback wherever practical.
+- Keep the media manager independent of unrelated slide component renders.
+- Clean up listeners correctly without discarding already prepared media.
+- Avoid loading the same file into multiple video elements.
+
+If the project uses React, keep the media elements stable across renders and do not put the video player inside a component that frequently remounts.
+
+Do not fetch the entire MP4 into a JavaScript Blob or ArrayBuffer merely to preload it. Preserve normal browser media streaming and range-request support.
+
+## 3. Loading Screen Design
+
+Create a polished, lightweight startup screen that fits the existing birthday website.
+
+Include:
+
+- A subtle train-themed loading animation.
+- The message: `Preparing Your Beautiful Memories...`
+- A progress indicator showing the preparation status of `Begining.mp4` and `Looping.mp4`.
+- A clear ready state when both videos can start playing.
+- Smooth transitions into the existing website.
+
+Keep the loading screen lightweight. Avoid expensive particle effects, excessive blur, large animations, or unnecessary external dependencies.
+
+### Loading behavior
+
+- Do not show fake percentage values that imply exact download completion.
+- Distinguish between media preparation and actual download progress.
+- If reliable byte-level progress is available, label it accurately.
+- If progress cannot be measured, display a clear preparation status instead.
+- If a video fails to load, show a useful retry option and identify the failed video.
+- Prevent an infinite loading screen.
+- Do not reveal the main website until the required readiness conditions are met, except when the user explicitly chooses a documented fallback.
+
+## 4. Optimize Video Playback for Smoothness
+
+Optimize the browser's playback pipeline without degrading video quality unnecessarily.
+
+For both videos:
+
+- Verify that the MP4 files contain browser-compatible video and audio codecs.
+- Prefer H.264 video with AAC audio for broad browser compatibility.
+- Ensure the MP4 metadata is positioned for progressive playback where applicable (`faststart`).
+- Avoid unnecessarily high bitrates or resolutions that exceed the display requirements.
+- Preserve the existing aspect ratio and cinematic cropping.
+- Use `playsInline` for mobile browsers.
+- Use muted playback for autoplay only where appropriate and consistent with the existing experience.
+- Avoid forcing `autoplay` on hidden or inactive video elements.
+- Handle the browser's autoplay restrictions correctly.
+- Avoid unnecessary playback restarts when switching slides.
+- Avoid decoding or playing both videos simultaneously when only one should be visible.
+- Use a clean transition between the train intro and the looping video.
+
+Do not change the intended playback speed, music synchronization, photo timing, or sequence duration without identifying an existing problem and explaining the proposed fix.
+
+If the MP4 files are very large, measure their sizes and recommend sensible encoding settings rather than blindly reducing quality.
+
+## 5. Preserve the Train and Memories Timeline
+
+The intended experience is:
+
+1. The initial loading screen prepares both videos.
+2. The birthday website opens only after both videos meet the required readiness criteria.
+3. The user reaches the Memories intro screen.
+4. The user clicks `Enter the Train`, if that button is present in the existing implementation.
+5. `Begining.mp4` plays using the prepared video element.
+6. The existing music and photo reveal timeline continues as originally implemented.
+7. When the train intro finishes, transition to `Looping.mp4` using the existing sequence logic.
+8. The looping video continues according to the current behavior.
+
+Inspect the current code to determine the correct timing and transition logic. Do not invent new timing values or duplicate the sequence.
+
+The media manager must not start the train video prematurely just because the files are ready. Preloading and playback are separate operations.
+
+## 6. Optimize the Entire Website
+
+Audit and optimize the entire project, not just the video component.
+
+### Rendering and React performance
+
+- Identify unnecessary renders and expensive calculations.
+- Prevent accidental component remounts.
+- Use memoization only where it provides a measurable benefit.
+- Keep state updates minimal and targeted.
+- Split code where doing so reduces the initial JavaScript workload.
+- Remove unused dependencies, dead code, duplicate logic, and redundant effects.
+- Avoid overengineering or rewriting working components without a clear performance benefit.
+
+### Images and assets
+
+- Optimize image formats and file sizes without visibly degrading quality.
+- Lazy-load offscreen images.
+- Prioritize assets needed for the initial screen.
+- Reserve image dimensions to prevent layout shifts.
+- Do not load every photo at startup if it is not required immediately.
+
+### CSS and animations
+
+- Prefer efficient transform and opacity animations.
+- Reduce expensive layout recalculations.
+- Avoid unnecessary backdrop filters and oversized shadows.
+- Prevent layout shifts during loading.
+- Preserve the existing visual identity and responsive design.
+
+### Network and code loading
+
+- Remove unnecessary network requests.
+- Defer noncritical code.
+- Use code splitting where useful.
+- Avoid downloading unused assets or initializing inactive features.
+- Ensure that startup work does not block the main thread unnecessarily.
+
+## 7. Audio and Interaction Safety
+
+Audio behavior is critical. Do not break the existing audio system while optimizing the website.
+
+Preserve:
+
+- All existing audio files.
+- Music start times and playback positions.
+- Looping and crossfade behavior.
+- Existing audio-to-video synchronization.
+- Photo reveal timing.
+- The gift box and DOB keypad interactions.
+- Letter page-turn animations and all letter text.
+- Journey, Celebration, and Final Words screens.
+- Existing navigation and responsive behavior.
+
+Do not create duplicate audio players or restart music because a loading component unmounts.
+
+Keep the audio controller separate from the initial video preloading screen. Preloading videos must not unexpectedly play audio or interrupt an existing track.
+
+## 8. Production Reliability for Vercel and Netlify
+
+Inspect the current build configuration and make the smallest changes needed for reliable production deployment.
+
+- Verify the framework's build command and output directory.
+- Verify that both MP4 files are included in the deployed output.
+- Use correct, case-sensitive public asset URLs.
+- Ensure that asset paths do not depend on the local computer's filesystem.
+- Check that large video files do not exceed applicable deployment limits.
+- Check whether the deployed host supports efficient video range requests and progressive delivery.
+- Do not assume a video that works on localhost will necessarily work after deployment.
+- Avoid unnecessary backend services or serverless functions for static video playback.
+- Preserve compatibility with the existing project structure.
+- Do not expose secrets or add API keys for local MP4 playback.
+
+If the video files are too large for the selected hosting plan or deployment workflow, explain the limitation and propose a suitable video-hosting alternative before making a disruptive change.
+
+## 9. Error Handling and Recovery
+
+Handle these situations gracefully:
+
+- Either video returns a 404.
+- A video fails to decode.
+- The network is slow or temporarily unavailable.
+- The browser cannot autoplay.
+- The user reloads the website during preparation.
+- The browser tab becomes inactive.
+- The user navigates between slides while a video is loading.
+- A video reaches the end or needs to loop.
+- A media event fires more than once.
+- The production deployment is missing a media asset.
+
+Provide useful error messages and retry controls. Prevent duplicate listeners, duplicate playback, and permanently stuck loading states.
+
+Do not silently substitute a different video or claim that the video is ready when it is not.
+
+## 10. Test the Production Experience
+
+After implementation:
+
+1. Run the available linting and type-checking commands.
+2. Run a clean production build.
+3. Verify that both MP4 files are present in the final output.
+4. Test the startup loading screen.
+5. Confirm that the main website opens only after both videos satisfy the readiness policy.
+6. Verify that both videos can start playback promptly after preparation.
+7. Test the full train-to-Memories transition.
+8. Verify audio continuity and photo reveal timing.
+9. Navigate repeatedly between slides and confirm that media elements are not recreated unnecessarily.
+10. Test mobile and desktop layouts.
+11. Check browser Console and Network panels for failed media requests, decode errors, unnecessary downloads, and layout shifts.
+12. Test the deployed site on Vercel or Netlify, not only the development server.
+
+If deployment testing is unavailable, state that clearly.
+
+## 11. Final Report
+
+After finishing, provide:
+
+- The actual performance bottlenecks identified.
+- The files changed.
+- How the two videos are preloaded and reused.
+- The exact readiness conditions that control when the website opens.
+- The video file sizes and any encoding recommendations.
+- The production build result.
+- Any remaining hosting, buffering, or browser limitations.
+
+**Final instruction:** Optimize the existing website thoroughly but safely. Prioritize fast startup, smooth playback, responsive interactions, correct media timing, and reliable production behavior. Preserve all existing content and functionality. Do not rebuild the website from scratch, fake loading progress, or promise zero buffering when the browser and network cannot guarantee it.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-10-17T20:27:22+05:30.
+
+The user's current state is as follows:
+Active Document: c:\GBB\gb\dude-j\vercel.json (LANGUAGE_JSON)
+Cursor is on line: 1
+Other open documents:
+- c:\GBB\gb\dude-j\vite.config.ts (LANGUAGE_TYPESCRIPT)
+- c:\GBB\gb\dude-j\src\utils\trainVideoController.ts (LANGUAGE_TYPESCRIPT)
+- c:\GBB\gb\dude-j\src\components\StageGallery.tsx (LANGUAGE_TSX)
+- c:\GBB\gb\dude-j\index.html (LANGUAGE_HTML)
+- c:\GBB\gb\dude-j\public\_headers (LANGUAGE_UNSPECIFIED)
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from Gemini 3.8 Flash (High) to Claude Sonnet 4.6 (Thinking). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>

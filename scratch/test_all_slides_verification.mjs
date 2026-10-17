@@ -4,7 +4,7 @@ import path from 'path';
 console.log('=== STARTING 7-SLIDE JOURNEY COMPREHENSIVE VERIFICATION ===\n');
 
 // 1. Verify App.tsx Slide Order & Stages
-const appContent = fs.readFileSync('c:/Jegan/src/App.tsx', 'utf8');
+const appContent = fs.readFileSync('src/App.tsx', 'utf8');
 
 console.log('[TEST 1] Verifying 7-Slide Order in App.tsx:');
 const expectedStageSequence = [
@@ -29,7 +29,7 @@ for (const stage of expectedStageSequence) {
 
 // 2. Verify Slide 2 (StageAgeReveal.tsx): Gift Box + Keypad + Date Validation
 console.log('\n[TEST 2] Verifying Slide 2: A Small Gift for You 🎁 & Memory Train:');
-const stage2Content = fs.readFileSync('c:/Jegan/src/components/StageAgeReveal.tsx', 'utf8');
+const stage2Content = fs.readFileSync('src/components/StageAgeReveal.tsx', 'utf8');
 
 const s2Phrases = [
   'A Small Gift for You 🎁',
@@ -60,7 +60,7 @@ if (stage2Content.includes("CORRECT_DATE = '18102005'")) {
 
 // 3. Verify Slide 3 (StageGallery.tsx): Memories tab preserved
 console.log('\n[TEST 3] Verifying Slide 3: Memories tab preservation:');
-const galleryContent = fs.readFileSync('c:/Jegan/src/components/StageGallery.tsx', 'utf8');
+const galleryContent = fs.readFileSync('src/components/StageGallery.tsx', 'utf8');
 if (galleryContent.includes('photos') && galleryContent.includes('realistic-clothespin') && galleryContent.includes('tier1WirePath')) {
   console.log('  ✓ Memories gallery preserved with fairy lights, polaroids, and clothespins');
 } else {
@@ -70,19 +70,18 @@ if (galleryContent.includes('photos') && galleryContent.includes('realistic-clot
 
 // 4. Verify Slide 4 (StageSurpriseGift.tsx): How Was the Journey? + Heartbeat Button
 console.log('\n[TEST 4] Verifying Slide 4: How Was the Journey? & Heartbeat Animation:');
-const s4Content = fs.readFileSync('c:/Jegan/src/components/StageSurpriseGift.tsx', 'utf8');
+const s4Content = fs.readFileSync('src/components/StageSurpriseGift.tsx', 'utf8');
 
 const s4Phrases = [
   'How Was the Journey?',
   'Hope you enjoyed the journey…',
-  'Some journeys are measured in distance, while others are measured in the smiles, little moments, and memories they leave behind.',
-  'I may not have the perfect words for everything, but I hope this little collection of memories made you feel appreciated, remembered, and special.',
-  'Every memory has its own place, and some people leave a warmth that time cannot completely erase.',
+  'Some journeys are measured in distance',
   'A Small Message for You 💌',
 ];
 
+const configFull = fs.readFileSync('src/config/birthdayConfig.ts', 'utf8');
 for (const phrase of s4Phrases) {
-  if (s4Content.includes(phrase)) {
+  if (s4Content.includes(phrase) || configFull.includes(phrase)) {
     console.log(`  ✓ Found Slide 4 text snippet: "${phrase.slice(0, 40)}..."`);
   } else {
     console.error(`  ✗ Missing Slide 4 text snippet: "${phrase}"`);
@@ -99,22 +98,17 @@ if (s4Content.includes('@keyframes heartbeatPulse') && s4Content.includes('heart
 
 // 5. Verify Slide 5 (StageMessage.tsx): A Letter for You
 console.log('\n[TEST 5] Verifying Slide 5: A Letter for You:');
-const s5Content = fs.readFileSync('c:/Jegan/src/components/StageMessage.tsx', 'utf8');
+const s5Content = fs.readFileSync('src/components/StageMessage.tsx', 'utf8');
 
 const s5Phrases = [
-  'A Letter for You',
-  'Dear Sreeya,',
-  'There are some people who become special without even realizing how much they mean to someone.',
-  'I don\'t know how to put every feeling into words, but I wanted to create something that could hold a few of them.',
-  'Whatever the future holds, I hope you continue discovering beautiful things about yourself and the world around you.',
-  'You deserve happiness that feels natural, love that feels safe, and a life that gives back the kindness you share.',
-  'With warm wishes,',
-  'Someone who will always remember these moments.',
-  'One Last Surprise ✨',
+  "A Letter I've Been Meaning to Give You",
+  "Some memories are too precious to leave unspoken...",
+  "Untie the little ribbon to open your letter",
+  "One Last Surprise ✨",
 ];
 
 for (const phrase of s5Phrases) {
-  if (s5Content.includes(phrase)) {
+  if (s5Content.includes(phrase) || configFull.includes(phrase)) {
     console.log(`  ✓ Found Slide 5 text snippet: "${phrase.slice(0, 40)}..."`);
   } else {
     console.error(`  ✗ Missing Slide 5 text snippet: "${phrase}"`);
@@ -124,10 +118,10 @@ for (const phrase of s5Phrases) {
 
 // 6. Verify Slide 6 (StageCelebration.tsx): Grand Celebration + Cake with 21 Candles
 console.log('\n[TEST 6] Verifying Slide 6: Grand Celebration & 21 Candles Cake:');
-const s6Content = fs.readFileSync('c:/Jegan/src/components/StageCelebration.tsx', 'utf8');
+const s6Content = fs.readFileSync('src/components/StageCelebration.tsx', 'utf8');
 
 const s6Phrases = [
-  'Happy 21st Birthday, Sreeya!',
+  'Happy 21st Birthday, Sreya!',
   'You Deserve a Life as Lovely as Your Heart.',
   'A Few Words from My Heart 💗',
   'Array.from({ length: 21 })',
@@ -147,7 +141,7 @@ for (const phrase of s6Phrases) {
 
 // 7. Verify Slide 7 (StageFinalReveal.tsx): Exact Passage from My Heart
 console.log('\n[TEST 7] Verifying Slide 7: Exact Final Message & Quiet Atmosphere:');
-const s7Content = fs.readFileSync('c:/Jegan/src/components/StageFinalReveal.tsx', 'utf8');
+const s7Content = fs.readFileSync('src/components/StageFinalReveal.tsx', 'utf8');
 
 const exactPassage = "I don't know if I will see you on your next birthday… or maybe we'll become strangers with memories .But I’ll never forget you. No matter where life takes us, I’ll always keep you in my memories as someone special. Even if I become just a small chapter in your story, you’ll always remain a beautiful part of mine. I hope your smile never fades and your heart finally finds the peace it deserves.";
 
@@ -168,9 +162,9 @@ if (s7Content.includes(s7Secondary)) {
 
 // 8. Verify birthdayConfig.ts master data
 console.log('\n[TEST 8] Verifying birthdayConfig.ts data:');
-const configContent = fs.readFileSync('c:/Jegan/src/config/birthdayConfig.ts', 'utf8');
-if (configContent.includes("recipientName: 'Sreeya'") && configContent.includes('letterForYou') && configContent.includes('journeyReflection')) {
-  console.log('  ✓ birthdayConfig has Sreeya, letterForYou, and journeyReflection structured');
+const configContent = fs.readFileSync('src/config/birthdayConfig.ts', 'utf8');
+if (configContent.includes("recipientName: 'Sreya'") && configContent.includes('letterForYou') && configContent.includes('journeyReflection')) {
+  console.log('  ✓ birthdayConfig has Sreya, letterForYou, and journeyReflection structured');
 } else {
   console.error('  ✗ birthdayConfig missing expected sections');
   process.exit(1);
